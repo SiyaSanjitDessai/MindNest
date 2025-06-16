@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Report Manager</title>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f7fa; text-align: center; padding: 40px; }
+    input, select { padding: 8px; margin: 8px; width: 200px; }
+    button { padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer; }
+    button:hover { background: #2980b9; }
+    canvas { margin-top: 40px; max-width: 100%; }
+    table { margin: auto; border-collapse: collapse; margin-top: 30px; }
+    th, td { padding: 10px 15px; border: 1px solid #ccc; }
+  </style>
+</head>
+<body>
+  <h1>📊 Health Report Manager</h1>
+  <form action="/submit_report" method="POST">
+    <select name="gender" required>
+      <option value="">Select Gender</option>
+      <option value="boy">Boy</option>
+      <option value="girl">Girl</option>
+    </select><br>
+    <input type="number" name="heart_rate" placeholder="Heart Rate (bpm)" required><br>
+    <input type="number" name="blood_sugar" placeholder="Blood Sugar (mg/dL)" required><br>
+    <input type="text" name="blood_pressure" placeholder="Blood Pressure (e.g. 120/80)" required><br>
+    <input type="number" step="0.1" name="haemoglobin" placeholder="Haemoglobin (g/dL)" required><br>
+    <button type="submit">Submit Report</button>
+  </form>
+
+  <h2>📈 Past 25 Days Trend</h2>
+  <canvas id="reportChart" width="800" height="400"></canvas>
+
+  <h2>📋 Last 25 Entries</h2>
+  <table id="reportTable">
+    <thead>
+      <tr>
+        <th>Day</th>
+        <th>Date</th>
+        <th>Heart Rate</th>
+        <th>Blood Sugar</th>
+        <th>Blood Pressure</th>
+        <th>Haemoglobin</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <h2>📊 Averages</h2>
+  <div id="averages"></div>
+
+  <h2>💡 Suggestions</h2>
+  <ul id="advice"></ul>
+
+  <script>
+    fetch('/get_reports')
+      .then(res => res.json())
+      .then(data => {
+        const labels = data.entries.map((_, i) => `Day ${i + 1}`);
+        const heartRates = data.entries.map(e => e.heart_rate);
+        const bloodSugars = data.entries.map(e => e.blood_sugar);
+        const systolics = data.entries.map(e => parseInt(e.blood_pressure.split('/')[0]));
+        const haemoglobins = data.entries.map(e => e.haemoglobin);
+
+        const ctx = document.getElementById('reportChart').getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: 'Heart Rate (bpm)',
+                data: heartRates,
+                borderColor: 'red', fill: false
+              },
+              {
+                label: 'Blood Sugar (mg/dL)',
+                data: bloodSugars,
+                borderColor: 'blue', fill: false
+              },
+              {
+                label: 'Systolic BP',
+                data: systolics,
+                borderColor: 'green', fill: false
+              },
+              {
+                label: 'Haemoglobin (g/dL)',
+                data: haemoglobins,
+                borderColor: 'orange', fill: false
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            scales: { y: { beginAtZero: false } }
+          }
+        });
+
+        // Table
+        const tableBody = document.querySelector('#reportTable tbody');
+        tableBody.innerHTML = '';
+        data.entries.forEach((e, i) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>Day ${i + 1}</td>
+            <td>${e.date}</td>
+            <td>${e.heart_rate}</td>
+            <td>${e.blood_sugar}</td>
+            <td>${e.blood_pressure}</td>
+            <td>${e.haemoglobin}</td>
+          `;
+          tableBody.appendChild(row);
+        });
+
+        // Averages
+        const avgDiv = document.getElementById('averages');
+        avgDiv.innerHTML = `
+          <p>Heart Rate: <b>${data.averages.heart_rate}</b> bpm</p>
+          <p>Blood Sugar: <b>${data.averages.blood_sugar}</b> mg/dL</p>
+          <p>Systolic BP: <b>${data.averages.blood_pressure}</b></p>
+          <p>Haemoglobin: <b>${data.averages.haemoglobin}</b> g/dL</p>
+        `;
+
+        // Advice
+        const adviceList = document.getElementById('advice');
+        data.advice.forEach(item => {
+          const li = document.createElement('li');
+          li.innerText = item;
+          adviceList.appendChild(li);
+        });
+      });
+  </script>
+</body>
+</html>

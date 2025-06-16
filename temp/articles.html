@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Motivational Articles</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fa;
+      text-align: center;
+      padding: 40px;
+    }
+    #article-title {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+    #article-content {
+      font-size: 1.1em;
+      margin-bottom: 20px;
+      width: 80%;
+      margin: auto;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background-color: #2ecc71;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #27ae60;
+    }
+  </style>
+</head>
+<body>
+  <h1>📰 Motivational Articles</h1>
+  <div id="article-title">Click below to load an article</div>
+  <div id="article-content"></div>
+  <button onclick="getNextArticle()">Next Article</button>
+  <button onclick="likeArticle()">❤️ Like</button>
+
+  <script>
+    let currentArticleId = null;
+
+    async function getNextArticle() {
+      const res = await fetch('/get_article');
+      const data = await res.json();
+      document.getElementById('article-title').innerText = data.title;
+      document.getElementById('article-content').innerText = data.content;
+      currentArticleId = data.id;
+    }
+
+    async function likeArticle() {
+      if (!currentArticleId) return;
+      const res = await fetch('/like_article', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: currentArticleId })
+      });
+      const data = await res.json();
+      alert(data.message);
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Motivational Blogs</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fa;
+      text-align: center;
+      padding: 40px;
+    }
+    #blog-title {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+    #blog-content {
+      font-size: 1.1em;
+      margin-bottom: 20px;
+      width: 80%;
+      margin: auto;
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <h1>📝 Motivational Blogs</h1>
+  <div id="blog-title">Click below to load a blog</div>
+  <div id="blog-content"></div>
+  <button onclick="getNextBlog()">Next Blog</button>
+  <button onclick="likeBlog()">❤️ Like</button>
+
+  <script>
+    let currentBlogId = null;
+
+    async function getNextBlog() {
+      const res = await fetch('/get_blog');
+      const data = await res.json();
+      document.getElementById('blog-title').innerText = data.title;
+      document.getElementById('blog-content').innerText = data.content;
+      currentBlogId = data.id;
+    }
+
+    async function likeBlog() {
+      if (!currentBlogId) return;
+      const res = await fetch('/like_blog', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: currentBlogId })
+      });
+      const data = await res.json();
+      alert(data.message);
+    }
+  </script>
+</body>
+</html>

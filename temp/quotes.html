@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Motivational Quotes</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f7fa;
+      text-align: center;
+      padding: 40px;
+    }
+    #quote-text {
+      font-size: 1.5em;
+      margin-bottom: 10px;
+    }
+    #quote-box {
+      font-size: 1.1em;
+      margin-bottom: 20px;
+      width: 80%;
+      margin: auto;
+      background: white;
+      border-radius: 10px;
+      padding: 20px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    button {
+      padding: 10px 20px;
+      margin: 10px;
+      font-size: 16px;
+      border: none;
+      border-radius: 6px;
+      background-color: #3498db;
+      color: white;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #2980b9;
+    }
+  </style>
+</head>
+<body>
+  <h1>📜 Motivational Quotes</h1>
+  <div id="quote-box">
+    <p id="quote-text">Click below to load a quote</p>
+  </div>
+  <button onclick="getNextQuote()">Next Quote</button>
+  <button onclick="likeQuote()">❤️ Like</button>
+
+  <script>
+    let currentQuoteId = null;
+
+    async function getNextQuote() {
+      const res = await fetch('/get_quote');
+      const data = await res.json();
+      document.getElementById('quote-text').innerText = data.text;
+      currentQuoteId = data.id;
+    }
+
+    async function likeQuote() {
+      if (!currentQuoteId) return;
+      const res = await fetch('/like_quote', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: currentQuoteId })
+      });
+      const data = await res.json();
+      alert(data.message);
+    }
+  </script>
+</body>
+</html>
