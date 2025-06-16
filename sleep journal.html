@@ -4,104 +4,16 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Sleep Tracker Journal</title>
+  <link rel="stylesheet" href="sleep-journal.css" />
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <style>
-    body, html {
-      margin: 0;
-      padding: 0;
-      height: 100%;
-      font-family: 'Times New Roman', serif;
-      color: #F4F4F4;
-    }
-
-    /* Background video style */
-    .bg-video {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100vw;
-      height: 100vh;
-      object-fit: cover;
-      z-index: -1;
-    }
-
-    .container {
-      max-width: 700px;
-      margin: auto;
-      padding: 20px;
-      background: rgba(102, 153, 204, 0.8);
-      border-radius: 12px;
-      box-shadow: 0px 0px 15px rgba(0, 0, 0, 0.2);
-      margin-top: 30px;
-      text-align: center;
-    }
-
-    .banner-image {
-      width: 100%;
-      height: auto;
-      max-height: 250px;
-      border-radius: 10px;
-      object-fit: cover;
-      margin-bottom: 20px;
-      display: block;
-    }
-
-    input, textarea {
-      width: 100%;
-      padding: 12px;
-      margin-top: 10px;
-      border-radius: 8px;
-      border: none;
-      background-color: #D6EAF8;
-    }
-
-    button {
-      width: 100%;
-      padding: 12px;
-      margin-top: 15px;
-      background: linear-gradient(90deg, #A9CCE3, #6C87C2);
-      border: none;
-      color: white;
-      font-size: 16px;
-      cursor: pointer;
-      border-radius: 8px;
-      transition: 0.3s;
-    }
-
-    button:hover {
-      background: linear-gradient(90deg, #A9CCE3);
-    }
-
-    .entry {
-      margin-top: 15px;
-      padding: 12px;
-      background: #AED6F1;
-      border-radius: 8px;
-      color: black;
-      box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
-      text-align: left;
-    }
-
-    .recommendation {
-      font-style: italic;
-      margin-top: 20px;
-    }
-
-    canvas {
-      margin-top: 30px;
-      background: white;
-      border-radius: 10px;
-    }
-  </style>
 </head>
 <body>
 
-   <video class="bg-video" autoplay muted loop playsinline>
+  <video class="bg-video" autoplay muted loop playsinline>
     <source src="111.mp4" type="video/mp4">
-      </video>
+  </video>
 
   <div class="container">
-   
     <h2>🌙 Sleep Tracker Journal 💤</h2>
     <p>Log your sleep and create a more peaceful routine!</p>
 
@@ -128,120 +40,6 @@
     <div id="entriesContainer"></div>
   </div>
 
-  <script>
-    const sleepInput = document.getElementById("sleepDuration");
-    const dateInput = document.getElementById("sleepDate");
-    const routineInput = document.getElementById("bedtimeRoutine");
-    const dreamsInput = document.getElementById("dreams");
-    const recommendation = document.getElementById("recommendation");
-    const entriesContainer = document.getElementById("entriesContainer");
-
-    let entries = JSON.parse(localStorage.getItem("sleepEntries")) || [];
-
-    function saveEntries() {
-      localStorage.setItem("sleepEntries", JSON.stringify(entries));
-    }
-
-    function updateChart() {
-      const labels = entries.map(entry => entry.date);
-      const data = entries.map(entry => entry.hours);
-
-      sleepChart.data.labels = labels;
-      sleepChart.data.datasets[0].data = data;
-      sleepChart.update();
-    }
-
-    function renderEntries() {
-      entriesContainer.innerHTML = '';
-      let total = 0;
-
-      entries.forEach(entry => {
-        const div = document.createElement("div");
-        div.className = "entry";
-        div.innerHTML = `
-          <strong>Date:</strong> ${entry.date}<br>
-          <strong>Hours Slept:</strong> ${entry.hours}<br>
-          <strong>Routine:</strong> ${entry.routine || 'N/A'}<br>
-          <strong>Dreams:</strong> ${entry.dreams || 'N/A'}
-        `;
-        entriesContainer.appendChild(div);
-        total += entry.hours;
-      });
-
-      if (entries.length > 0) {
-        const avg = (total / entries.length).toFixed(1);
-        recommendation.textContent = `Your average sleep is ${avg} hours. ` +
-          (avg < 5 ? "Try to unwind more before bed by dimming the lights, sipping on herbal tea, and doing gentle stretches—small calming actions can signal your body that it's time to rest." :
-          avg >= 8 ? "You're sleeping well, keep it up!" :
-          "You're on the right track!");
-      }
-    }
-
-    function addEntry() {
-      const date = dateInput.value;
-      const hours = parseFloat(sleepInput.value);
-      const routine = routineInput.value.trim();
-      const dreams = dreamsInput.value.trim();
-
-      if (!date || !hours || hours < 1 || hours > 12) {
-        alert("Please enter a valid date and sleep duration (1–12 hours).");
-        return;
-      }
-
-      const newEntry = { date, hours, routine, dreams };
-
-      const MAX = 30;
-      if (entries.length >= MAX) {
-        entries.shift();
-      }
-
-      entries.push(newEntry);
-      saveEntries();
-      renderEntries();
-      updateChart();
-
-      // Clear inputs
-      sleepInput.value = '';
-      dateInput.value = '';
-      routineInput.value = '';
-      dreamsInput.value = '';
-    }
-
-    function refreshMoodChart() {
-      entries = JSON.parse(localStorage.getItem("sleepEntries")) || [];
-      renderEntries();
-      updateChart();
-    }
-
-    const ctx = document.getElementById('sleepChart').getContext('2d');
-    const sleepChart = new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: [],
-        datasets: [{
-          label: 'Hours of Sleep',
-          data: [],
-          backgroundColor: 'rgba(174, 214, 241, 0.2)',
-          borderColor: '#5DADE2',
-          borderWidth: 2,
-          tension: 0.3,
-          fill: true,
-        }]
-      },
-      options: {
-        scales: {
-          y: {
-            suggestedMin: 0,
-            suggestedMax: 12
-          }
-        }
-      }
-    });
-
-    // Initialize
-    renderEntries();
-    updateChart();
-  </script>
+  <script src="sleep-journal.js"></script>
 </body>
 </html>
->
