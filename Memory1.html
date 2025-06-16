@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Matching Tiles</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="script.js" defer></script>
+</head>
+
+<body>
+    <div class="main-menu">
+        <h1>Memory Tiles</h1>
+
+        <div class="level-selector">
+            <label>Choose Level:</label><br>
+            <input type="radio" id="easy" name="level" value="easy">
+            <label for="easy">Easy (2x2)</label><br>
+            <input type="radio" id="medium" name="level" value="medium" checked>
+            <label for="medium">Medium (4x4)</label><br>
+            <input type="radio" id="hard" name="level" value="hard">
+            <label for="hard">Hard (6x6)</label>
+        </div>
+        <button class="start" onclick="storeLevelAndStart()">Start Game</button>
+    </div>
+    <script>
+        function storeLevelAndStart() {
+            const selectedLevel = document.querySelector('input[name="level"]:checked').value;
+            localStorage.setItem("selectedLevel", selectedLevel);
+            window.location.href = "game.html";
+        }
+    </script>
+    <script>
+    function createBubble() {
+        const bubble = document.createElement("div");
+        bubble.classList.add("bubble");
+        bubble.style.left = `${Math.random() * 100}vw`;
+        bubble.style.width = bubble.style.height = `${10 + Math.random() * 20}px`;
+        bubble.style.animationDuration = `${3 + Math.random() * 3}s`;
+
+        document.querySelector(".bubble-container").appendChild(bubble);
+        setTimeout(() => bubble.remove(), 6000);
+    }
+    setInterval(createBubble, 250);
+</script>
+</body>
+
+</html>
