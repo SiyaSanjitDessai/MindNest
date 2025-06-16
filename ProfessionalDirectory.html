@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Directory</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+    <h1>🥼 Find a Trusted Doctor in Indore</h1>
+    <div class="filters">
+        <input type="text" id="searchBar" placeholder="Search by name or area…">
+
+        <select id="specialtyFilter">
+            <option value="">All Specialties</option>
+            <option value="General Physician">🩺 General Physician</option>
+            <option value="Psychologist">🧠 Psychologist</option>
+            <option value="Therapist">🗣️ Therapist</option>
+            <option value="Counsellor">💬 Counsellor</option>
+        </select>
+
+        <button id="clearBtn" class="btn clear">Clear</button>
+    </div>
+    <div id="directory"></div>
+    <div id="modal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            <div id="modalDetails"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>

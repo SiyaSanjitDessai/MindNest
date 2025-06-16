@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <title>Bubble Popper Game</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+  <h1>🫧 Bubble Popper Game</h1>
+  <div id="gameArea"></div>
+  <div id="scoreBoard">
+    ⏱ Time: <span id="timer">30</span>s | 🧮 Score: <span id="score">0</span>
+  </div>
+
+  <div id="gameOver" class="hidden">
+    <h2>⏰ Game Over!</h2>
+    <p>Your Score: <span id="finalScore">0</span></p>
+    <button onclick="startGame()">🔁 Play Again</button>
+  </div>
+  <audio id="popSound" src="audio/pop.mp3"></audio>
+  <audio id="endSound" src="audio/tada.mp3"></audio>
+
+  <script src="script.js"></script>
+</body>
+
+</html>

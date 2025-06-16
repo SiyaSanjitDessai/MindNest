@@ -1,173 +1,96 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const board = document.querySelector(".game-board");
-  const restart = document.querySelector(".restart");
-  const attemptsDisplay = document.getElementById("attempts");
-  const timerDisplay = document.getElementById("timer");
-  const winMessage = document.getElementById("win");
+const gameArea = document.getElementById("gameArea");
+const scoreEl = document.getElementById("score");
+const timerEl = document.getElementById("timer");
+const popSound = document.getElementById("popSound");
+const gameOverScreen = document.getElementById("gameOver");
+const finalScoreEl = document.getElementById("finalScore");
 
-  let timerInterval;
-  let time = 0;
+let score = 0;
+let timeLeft = 30;
+let bubbleInterval = 1000;
+let bubbleSpawner;
+let timerCountdown;
 
-  const allEmojis = [
-    "🌈", "😊", "💕", "✨", "🌸", "🍰", "🌟", "🐶",
-    "🎵", "🔥", "🎈", "🌻", "🐱", "🎮", "🚀", "🍕",
-    "🦄", "🌙"
-  ];
+function startGame() {
+  // Reset
+  score = 0;
+  timeLeft = 30;
+  bubbleInterval = 1000;
+  scoreEl.textContent = "0";
+  timerEl.textContent = timeLeft;
+  gameOverScreen.classList.add("hidden");
+  gameArea.innerHTML = "";
 
-  const flipSound = new Audio("sounds/flip.mp3");
-  const winSound = new Audio("sounds/win.mp3");
+  // Start timer
+  timerCountdown = setInterval(() => {
+    timeLeft--;
+    timerEl.textContent = timeLeft;
 
-  let firstCard = null;
-  let secondCard = null;
-  let lockBoard = false;
-  let attempts = 0;
-  let matchedPairs = 0;
-  let currentEmojis = [];
-
-  function startTimer() {
-    time = 0;
-    timerDisplay.textContent = time;
-    clearInterval(timerInterval);
-    timerInterval = setInterval(() => {
-      time++;
-      timerDisplay.textContent = time;
-    }, 1000);
-  }
-
-  function updateAttempts() {
-    attempts++;
-    attemptsDisplay.textContent = attempts;
-  }
-
-  function resetTurn() {
-    [firstCard, secondCard] = [null, null];
-    lockBoard = false;
-  }
-
-  function checkMatch() {
-    const firstEmoji = firstCard.querySelector(".back").textContent;
-    const secondEmoji = secondCard.querySelector(".back").textContent;
-
-    if (firstEmoji === secondEmoji) {
-      firstCard.classList.add("matched");
-      secondCard.classList.add("matched");
-      matchedPairs += 2;
-
-      if (matchedPairs === currentEmojis.length * 2) {
-        clearInterval(timerInterval);
-        setTimeout(() => {
-          winSound.play();
-          winMessage.style.display = "block";
-        }, 500);
-      }
-
-      resetTurn();
-    } else {
-      setTimeout(() => {
-        firstCard.classList.remove("flipped");
-        secondCard.classList.remove("flipped");
-        resetTurn();
-      }, 800);
+    if (timeLeft <= 0) {
+      endGame();
     }
-  }
 
-  function createCard(emoji) {
-    const card = document.createElement("div");
-    card.classList.add("tile");
-
-    const inner = document.createElement("div");
-    inner.classList.add("tile-inner");
-
-    const front = document.createElement("div");
-    front.classList.add("front");
-
-    const back = document.createElement("div");
-    back.classList.add("back");
-    back.textContent = emoji;
-
-    inner.appendChild(front);
-    inner.appendChild(back);
-    card.appendChild(inner);
-
-    card.addEventListener("click", () => {
-      if (
-        lockBoard ||
-        card.classList.contains("flipped") ||
-        card.classList.contains("matched")
-      ) return;
-
-      flipSound.play();
-      card.classList.add("flipped");
-
-      if (!firstCard) {
-        firstCard = card;
-        return;
-      }
-
-      secondCard = card;
-      lockBoard = true;
-      updateAttempts();
-      checkMatch();
-    });
-
-    return card;
-  }
-
-  function updateBoardGrid(level) {
-    if (level === "easy") {
-      board.style.gridTemplateColumns = "repeat(2, 100px)";
-      board.style.gridTemplateRows = "repeat(2, 100px)";
-      board.style.gap = "15px";
-      updateTileSize(100);
-    } else if (level === "medium") {
-      board.style.gridTemplateColumns = "repeat(4, 100px)";
-      board.style.gridTemplateRows = "repeat(4, 100px)";
-      board.style.gap = "15px";
-      updateTileSize(100);
-    } else if (level === "hard") {
-      board.style.gridTemplateColumns = "repeat(6, 70px)";
-      board.style.gridTemplateRows = "repeat(6, 70px)";
-      board.style.gap = "8px";
-      updateTileSize(70);
+    // Difficulty scaling every 5 seconds
+    if (timeLeft % 5 === 0 && bubbleInterval > 400) {
+      bubbleInterval -= 100;
+      clearInterval(bubbleSpawner);
+      bubbleSpawner = setInterval(createBubble, bubbleInterval);
     }
+  }, 1000);
+
+  // Start bubble spawner
+  bubbleSpawner = setInterval(createBubble, bubbleInterval);
+}
+
+function spawnConfetti(quantity = 40) {
+  for (let i = 0; i < quantity; i++) {
+    const confetti = document.createElement("div");
+    confetti.classList.add("confetti");
+    confetti.style.left = Math.random() * window.innerWidth + "px";
+    confetti.style.setProperty('--hue', Math.random());
+    document.body.appendChild(confetti);
+    setTimeout(() => confetti.remove(), 3000);
   }
+}
 
-  function updateTileSize(size) {
-    const style = document.createElement("style");
-    style.innerHTML = `
-      .tile {
-        width: ${size}px;
-        height: ${size}px;
-      }
-    `;
-    document.head.appendChild(style);
-  }
+function endGame() {
+  clearInterval(timerCountdown);
+  clearInterval(bubbleSpawner);
+  finalScoreEl.textContent = score;
+  gameOverScreen.classList.remove("hidden");
+  gameOverScreen.style.display = "block";
+  gameOverScreen.style.animation = "fadeIn 0.5s ease-in-out";
 
-  function startGame() {
-    const level = localStorage.getItem("selectedLevel") || "medium";
+  const endSound = document.getElementById("endSound");
+  if (endSound) endSound.play().catch(err => console.error("End sound error:", err));
 
-    board.innerHTML = "";
-    attempts = 0;
-    matchedPairs = 0;
-    attemptsDisplay.textContent = attempts;
-    winMessage.style.display = "none";
-    resetTurn();
+  spawnConfetti();
+}
 
-    let emojiCount = 0;
-    if (level === "easy") emojiCount = 2;
-    else if (level === "medium") emojiCount = 8;
-    else if (level === "hard") emojiCount = 18;
+function createBubble() {
+  const bubble = document.createElement("div");
+  bubble.classList.add("bubble");
 
-    currentEmojis = allEmojis.slice(0, emojiCount);
-    const shuffled = [...currentEmojis, ...currentEmojis].sort(() => 0.5 - Math.random());
+  bubble.style.left = Math.random() * (window.innerWidth - 60) + "px";
 
-    updateBoardGrid(level);
-    shuffled.forEach((emoji) => board.appendChild(createCard(emoji)));
+  const pop = () => {
+    score++;
+    scoreEl.textContent = score;
+    bubble.remove();
 
-    startTimer();
-  }
+    if (popSound) {
+      popSound.currentTime = 0;
+      popSound.play().catch((err) => console.error("Audio play error:", err));
+    }
+  };
 
-  restart.addEventListener("click", startGame);
-  startGame();
+  bubble.addEventListener("click", pop);
+  bubble.addEventListener("touchstart", pop);
 
-});
+  gameArea.appendChild(bubble);
+
+  setTimeout(() => bubble.remove(), 8000); // Match this with CSS float speed if increased
+}
+
+// Auto start game
+window.onload = startGame;
